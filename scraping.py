@@ -6,7 +6,7 @@ import re
 def pull_fivethirtyeight():
     page_url = 'https://fivethirtyeight.com/politics/'
 
-# Open connection and pull html contents from homepage
+    # Open connection and pull html contents from homepage
     PM = urllib3.PoolManager()
     r = PM.request('GET', page_url)
     soup = BeautifulSoup(r.data.decode('utf-8'), 'lxml')
@@ -15,7 +15,7 @@ def pull_fivethirtyeight():
 
     links = []
 
-# Extract links to individual articles
+    # Extract links to individual articles
     for container in containers:
         if container.get('data-href'):
             link = container['data-href']
@@ -26,7 +26,7 @@ def pull_fivethirtyeight():
     by_lines = []
     contents = []
     
-# Extract info from each article
+    # Extract info from each article
     for link in links :
         PM2 = urllib3.PoolManager()
         r2 = PM2.request('GET', link)
@@ -53,7 +53,7 @@ def pull_fivethirtyeight():
 def pull_foxnews():
     page_url = 'https://www.foxnews.com/politics'
 
-# Open connection and pull html contents from homepage
+    # Open connection and pull html contents from homepage
     
     PM = urllib3.PoolManager()
     r = PM.request('GET', page_url)        
@@ -63,18 +63,18 @@ def pull_foxnews():
 
     links = []
 
-# Extract links to individual articles
+    # Extract links to individual articles
     for container in containers:
         if container.div.a.get('href'):         
             link = container.div.a['href']
-            if link.find('//video') == -1:
+            if link.find('/video') == -1:
                 links.append('https://foxnews.com' + link)
 
     titles = []
     by_lines = []
     contents = []
         
-# Extract info from each article
+    # Extract info from each article
     for link in links :
         PM2 = urllib3.PoolManager()
         r2 = PM2.request('GET', link)
@@ -101,12 +101,12 @@ def pull_foxnews():
 def pull_apnews():
     page_url = 'https://apnews.com/hub/politics'
 
-# Open connection and pull html contents from homepage
+    # Open connection and pull html contents from homepage
     
     PM = urllib3.PoolManager()
     r = PM.request('GET', page_url)
             
-    print('connection made..')        
+    print('AP connection made..')        
             
     soup = BeautifulSoup(r.data.decode('utf-8'), 'lxml')
 
@@ -114,7 +114,7 @@ def pull_apnews():
 
     links = []
 
-# Extract links to individual articles
+    # Extract links to individual articles
     for container in containers:
         if container.get('href'):         
             link = container['href']
@@ -127,7 +127,7 @@ def pull_apnews():
     contents = []
 
         
-# Extract info from each article
+    # Extract info from each article
     for link in links :
         PM2 = urllib3.PoolManager()
         r2 = PM2.request('GET', link)
@@ -139,14 +139,19 @@ def pull_apnews():
         
         body = soup2.find('div', {'class':'Article', 'data-key' : 'article'})          
     
-        text = ''
-        for tag in body :
-            if tag.name == 'p':
-                text += ' ' + tag.get_text(strip = True)
-        
-        titles.append(title)
-        by_lines.append(by_line.text)
-        contents.append(text)
+    
+        try :
+            text = ''
+            for tag in body :
+                if tag.name == 'p':
+                    text += ' ' + tag.get_text(strip = True)
+                    
+            titles.append(title)
+            by_lines.append(by_line.text)
+            contents.append(text)
+
+        except Exception as e: 
+            print('Failed to pull {}\n\t{}'.format(link, e))
 
 
     return titles, by_lines, contents, links

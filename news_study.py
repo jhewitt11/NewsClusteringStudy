@@ -11,7 +11,7 @@ from tools      import read_dictionary, save_dictionary
 from scraping   import pull_fivethirtyeight, pull_foxnews, pull_apnews
 
 # file name for json.dump()
-file_name = '100322_news.json'
+file_name = '100422_news.json'
 
 doc_dic = read_dictionary(file_name)
 
@@ -33,8 +33,8 @@ if not(doc_dic) :
                     doc_dic[titles[k]] = (authors[k], contents[k], links[k])
         
         except Exception as e:
-            print("{} failed, exception found\n".format(tool))
-            print(e)
+            print("{} failed, exception found :\n\t{}".format(tool, e))
+            
 
     save_dictionary(doc_dic, file_name)
 
@@ -78,7 +78,7 @@ for link in links:
         source_colors.append('k')
 
 # Plot
-fig = plt.figure(figsize = (8,8))
+fig = plt.figure(figsize = (12,12))
 ax = plt.axes(projection='3d')
 
 for i in range(len(x)):
