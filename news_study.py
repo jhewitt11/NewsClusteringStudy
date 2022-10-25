@@ -1,17 +1,20 @@
 import json
 import numpy as np
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import PCA
+from sklearn.neighbors import NearestNeighbors
 
-import seaborn as sns
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 from mpl_toolkits import mplot3d
+
 
 from tools      import read_dictionary, save_dictionary
 from scraping   import pull_fivethirtyeight, pull_foxnews, pull_apnews
 
 # file name for json.dump()
-file_name = '100422_news.json'
+file_name = '100622_news.json'
 
 doc_dic = read_dictionary(file_name)
 
@@ -38,6 +41,7 @@ if not(doc_dic) :
 
     save_dictionary(doc_dic, file_name)
 
+headlines = list(doc_dic.keys())
 corpus = [value[1] for value in doc_dic.values()]
 
 # create TFIDF vectors
@@ -49,11 +53,28 @@ feature_names = vectorizer.get_feature_names_out()
 X = X.toarray()
 
 # PCA => 3 dims
-pca = PCA(n_components = 3)
+pca = PCA(n_components = 6)
 X_prime = pca.fit_transform(X)
 
 # Format data to plot
 X_prime = np.array(X_prime)
+
+
+neighbs = NearestNeighbors(n_neighbors = 4)
+neighbs.fit(X_prime)
+distances, indices = neighbs.radius_neighbors(X_prime, radius = 0.1, return_distance = True, sort_results = True)
+
+np.set_printoptions(formatter={'float': lambda x: "{0:0.2f}".format(x)})
+
+
+#for k, index in enumerate(indices):
+#    print(f'#{k}\t{indices[k]}\n   \t{distances[k]}\n')
+        
+
+
+
+
+
 
 x = X_prime[:,0]
 y = X_prime[:,1]
@@ -77,13 +98,19 @@ for link in links:
     else:
         source_colors.append('k')
 
+red_patch = mpatches.Patch(color='red', label='foxnews')
+blue_patch = mpatches.Patch(color='blue', label='apnews')
+green_patch = mpatches.Patch(color='green', label='fivethirtyeight')
+
+
 # Plot
-fig = plt.figure(figsize = (12,12))
+fig = plt.figure(figsize = (8,8))
 ax = plt.axes(projection='3d')
 
 for i in range(len(x)):
-    ax.scatter(x[i], y[i], z[i],  color = source_colors[i], depthshade = True)
+    ax.scatter(x[i], y[i], z[i],  color = source_colors[i], label = source_colors[i], depthshade = True)
     ax.text(x[i], y[i], z[i], '%s' % i, color = 'k')
     
 ax.set_title('PCA reduced TFIDF embeddings')
+plt.legend(handles=[red_patch, green_patch, blue_patch])
 plt.show()
