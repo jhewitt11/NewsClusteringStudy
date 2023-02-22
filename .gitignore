@@ -2,4 +2,5 @@
 clusters*
 *_news.json
 *.ipynb
+*.z
 __pycache__/

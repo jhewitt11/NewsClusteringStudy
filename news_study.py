@@ -1,5 +1,6 @@
 import json
 import numpy as np
+import joblib
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import PCA
@@ -9,15 +10,13 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from mpl_toolkits import mplot3d
 
+from tools      import read_dictionary
 
-from tools      import read_dictionary, save_dictionary
-from scraping   import pull_fivethirtyeight, pull_foxnews, pull_apnews
-
-FILE_NAME   = '100_news.json'
+DICT_NAME   = '2023-02-22_news.json'
 SCHEME      = 'tfidf'
 
 
-doc_dic = read_dictionary(FILE_NAME)
+doc_dic = read_dictionary(DICT_NAME)
 assert(doc_dic != False)
 
 
@@ -30,25 +29,27 @@ if SCHEME == 'tfidf' :
     vectorizer = TfidfVectorizer()
     X = vectorizer.fit_transform(corpus)
 
+    # need to transform X from a sparse matrix
+    X = X.toarray()
+
 
 elif SCHEME == 'bert' :
 
-    continue
+    date = DICT_NAME.split('_')[0]
+    EMBEDDING_NAME = date+'_embedding.z'
+
+    X = joblib.load(EMBEDDING_NAME)    
 
 else :
     print('error: encoding scheme not recognized.')
 
 
 
-# need to transform X from a sparse matrix
-X = X.toarray()
+
 
 # PCA => 3 dims
 pca = PCA(n_components = 3)
-X_prime = pca.fit_transform(X)
-
-# Format data to plot
-X_prime = np.array(X_prime)
+X_prime = np.array(pca.fit_transform(X))
 
 
 neighbs = NearestNeighbors(n_neighbors = 4)
