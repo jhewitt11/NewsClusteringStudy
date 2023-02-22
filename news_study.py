@@ -13,47 +13,38 @@ from mpl_toolkits import mplot3d
 from tools      import read_dictionary, save_dictionary
 from scraping   import pull_fivethirtyeight, pull_foxnews, pull_apnews
 
-# file name for json.dump()
-file_name = '100622_news.json'
+FILE_NAME   = '100_news.json'
+SCHEME      = 'tfidf'
 
-doc_dic = read_dictionary(file_name)
 
-if not(doc_dic) :
+doc_dic = read_dictionary(FILE_NAME)
+assert(doc_dic != False)
 
-    print("{} not found, scraping sites and building dictionary".format(file_name))
-    tools = [pull_fivethirtyeight, pull_foxnews, pull_apnews]
-    doc_dic = {}
-
-    for tool in tools:
-        try:
-            titles, authors, contents, links = tool()
-            
-            for k in range(len(titles)):
-                if doc_dic.get(titles[k]):
-                    print(titles[k])
-                    print('error : duplicate title found\n')
-                else:
-                    doc_dic[titles[k]] = (authors[k], contents[k], links[k])
-        
-        except Exception as e:
-            print("{} failed, exception found :\n\t{}".format(tool, e))
-            
-
-    save_dictionary(doc_dic, file_name)
 
 headlines = list(doc_dic.keys())
 corpus = [value[1] for value in doc_dic.values()]
 
-# create TFIDF vectors
-vectorizer = TfidfVectorizer()
-X = vectorizer.fit_transform(corpus)
-feature_names = vectorizer.get_feature_names_out()
+if SCHEME == 'tfidf' :
+
+    # create TFIDF vectors
+    vectorizer = TfidfVectorizer()
+    X = vectorizer.fit_transform(corpus)
+
+
+elif SCHEME == 'bert' :
+
+    continue
+
+else :
+    print('error: encoding scheme not recognized.')
+
+
 
 # need to transform X from a sparse matrix
 X = X.toarray()
 
 # PCA => 3 dims
-pca = PCA(n_components = 6)
+pca = PCA(n_components = 3)
 X_prime = pca.fit_transform(X)
 
 # Format data to plot

@@ -3,6 +3,8 @@ import urllib3
 import requests
 import re
 
+from datetime import date
+
 def pull_fivethirtyeight():
     page_url = 'https://fivethirtyeight.com/politics/'
 
@@ -48,7 +50,6 @@ def pull_fivethirtyeight():
         
     return titles, by_lines, contents, links
 
-#titles, by_lines, content, links = pull_fivethirtyeight()
 
 def pull_foxnews():
     page_url = 'https://www.foxnews.com/politics'

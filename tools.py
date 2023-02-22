@@ -120,28 +120,3 @@ def pull_doc_num(collection):
     num = len(collection.partitions)
 
     return num
-
-'''
-[KEY WORDS & PHRASES: (\w|\s|,|')*]
-
-OG cleaning
-max sent lengths:
-585
-446
-610
-408
-583
-746
-1024    childhood jesus
-1594    ChristmasStory
-929     FishesLoaves 1
-494     JesusBaptismStory
-1106    JesusFisherman
-1075    JesusHeals1
-1529    JesusHeals2
-761     JesusWalksWater
-1540    JohnAndEssenes
-550     LordsPrayer
-1211    TransfgOfJesus
-
-'''
