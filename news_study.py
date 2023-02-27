@@ -12,46 +12,52 @@ from mpl_toolkits import mplot3d
 
 from tools      import read_dictionary
 
-DICT_NAME   = '2023-02-22_news.json'
-SCHEME      = 'tfidf'
+DICT_NAME               = '2023-02-22_news.json'
+VECTOR_SCHEME           = 'BERT'
+DIM_REDUCTION_SCHEME    = 'PCA'
+DIMENSIONALITY          = 2
 
+DATE = DICT_NAME.split('_')[0]
+ID = str(np.random.randint(low = 0, high = 1000))
 
-doc_dic = read_dictionary(DICT_NAME)
+doc_dic = read_dictionary('data/' + DICT_NAME)
 assert(doc_dic != False)
-
 
 headlines = list(doc_dic.keys())
 corpus = [value[1] for value in doc_dic.values()]
 
-if SCHEME == 'tfidf' :
+
+
+if VECTOR_SCHEME == 'TFIDF' :
 
     # create TFIDF vectors
     vectorizer = TfidfVectorizer()
     X = vectorizer.fit_transform(corpus)
-
-    # need to transform X from a sparse matrix
     X = X.toarray()
 
-
-elif SCHEME == 'bert' :
+elif VECTOR_SCHEME == 'BERT' :
 
     date = DICT_NAME.split('_')[0]
     EMBEDDING_NAME = date+'_embedding.z'
 
-    X = joblib.load(EMBEDDING_NAME)    
+    X = joblib.load('data/embeddings/' + EMBEDDING_NAME)    
 
 else :
-    print('error: encoding scheme not recognized.')
+    print('error: VECTOR_SCHEME not recognized.')
 
 
 
+if DIM_REDUCTION_SCHEME == 'PCA':
 
+    pca = PCA(n_components = DIMENSIONALITY)
+    X_prime = pca.fit_transform(X)
 
-# PCA => 3 dims
-pca = PCA(n_components = 3)
-X_prime = np.array(pca.fit_transform(X))
+elif DIM_REDUCTION_SCHEME == 'UMAP':
+    pass
+else :
+    print('error: DIM_REDUCTION_SCHEME not recognized.')
 
-
+'''
 neighbs = NearestNeighbors(n_neighbors = 4)
 neighbs.fit(X_prime)
 distances, indices = neighbs.radius_neighbors(X_prime, radius = 0.1, return_distance = True, sort_results = True)
@@ -60,9 +66,8 @@ np.set_printoptions(formatter={'float': lambda x: "{0:0.2f}".format(x)})
 
 
 #for k, index in enumerate(indices):
-#    print(f'#{k}\t{indices[k]}\n   \t{distances[k]}\n')
-        
-
+#    print(f'#{k}\t{indices[k]}\n   \t{distances[k]}\n')      
+'''
 
 
 
@@ -70,7 +75,7 @@ np.set_printoptions(formatter={'float': lambda x: "{0:0.2f}".format(x)})
 
 x = X_prime[:,0]
 y = X_prime[:,1]
-z = X_prime[:,2]
+#z = X_prime[:,2]
 
 # Create color mapping by source
 links = [value[2] for value in doc_dic.values()]
@@ -97,12 +102,17 @@ green_patch = mpatches.Patch(color='green', label='fivethirtyeight')
 
 # Plot
 fig = plt.figure(figsize = (8,8))
-ax = plt.axes(projection='3d')
+ax = plt.axes()
+#ax = plt.axes(projection='3d')
 
 for i in range(len(x)):
-    ax.scatter(x[i], y[i], z[i],  color = source_colors[i], label = source_colors[i], depthshade = True)
-    ax.text(x[i], y[i], z[i], '%s' % i, color = 'k')
+    ax.scatter(x[i], y[i],  color = source_colors[i], label = source_colors[i])
+    ax.text(x[i], y[i], '%s' % i, color = 'k')
     
-ax.set_title('PCA reduced TFIDF embeddings')
+ax.set_title(DIM_REDUCTION_SCHEME+' reduced '+VECTOR_SCHEME+' embeddings')
 plt.legend(handles=[red_patch, green_patch, blue_patch])
-plt.show()
+
+
+
+
+fig.savefig('results/'+DATE+' '+ID+' '+DIM_REDUCTION_SCHEME+' reduced '+VECTOR_SCHEME+' embeddings'+'.png')
