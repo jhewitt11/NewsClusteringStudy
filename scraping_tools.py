@@ -11,6 +11,9 @@ def pull_fivethirtyeight():
     # Open connection and pull html contents from homepage
     PM = urllib3.PoolManager()
     r = PM.request('GET', page_url)
+
+    print('fivethirtyeight connection made..') 
+
     soup = BeautifulSoup(r.data.decode('utf-8'), 'lxml')
 
     containers = soup.findAll("div", id = re.compile('post-\d*'))
@@ -57,7 +60,9 @@ def pull_foxnews():
     # Open connection and pull html contents from homepage
     
     PM = urllib3.PoolManager()
-    r = PM.request('GET', page_url)        
+    r = PM.request('GET', page_url)
+
+    print('FoxNews connection made..')         
             
     soup = BeautifulSoup(r.data.decode('utf-8'), 'lxml')
     containers = soup.findAll("article", {'class':'article'})
@@ -110,50 +115,45 @@ def pull_apnews():
     print('AP connection made..')        
             
     soup = BeautifulSoup(r.data.decode('utf-8'), 'lxml')
-
     containers = soup.findAll("a", {'data-key': 'story-link'})
 
-    links = []
-
     # Extract links to individual articles
+    links = []
+    
     for container in containers:
         if container.get('href'):         
             link = container['href']
             links.append('https://apnews.com' + link)
-
-
-
+    
+    # Extract info from each article
     titles = []
     by_lines = []
     contents = []
 
-        
-    # Extract info from each article
     for link in links :
         PM2 = urllib3.PoolManager()
         r2 = PM2.request('GET', link)
         soup2 = BeautifulSoup(r2.data.decode('utf-8'), 'lxml')
         
-
         title = soup2.find('h1').text
-        by_line = soup2.find('div', {'class': re.compile(r'^Component-signature')})
+        by_line = soup2.find('span', {'class': re.compile(r'^Component-signature')})
         
         body = soup2.find('div', {'class':'Article', 'data-key' : 'article'})          
-    
     
         try :
             text = ''
             for tag in body :
+
                 if tag.name == 'p':
-                    text += ' ' + tag.get_text(strip = True)
+                    piece = tag.get_text(strip = True)
+                    text += ' ' + piece
                     
             titles.append(title)
+            contents.append(text)   
             by_lines.append(by_line.text)
-            contents.append(text)
 
         except Exception as e: 
-            print('Failed to pull {}\n\t{}'.format(link, e))
-
+            print(f'\nByline : {by_line}\nFrom : {title}\nError : {e}')
 
     return titles, by_lines, contents, links
     

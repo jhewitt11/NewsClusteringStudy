@@ -5,3 +5,4 @@ clusters*
 *.z
 __pycache__/
 results/
+sandbox.py
