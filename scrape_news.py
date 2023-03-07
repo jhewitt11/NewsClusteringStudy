@@ -4,6 +4,7 @@ from datetime import date
 from scraping_tools import pull_fivethirtyeight
 from scraping_tools import pull_foxnews
 from scraping_tools import pull_apnews
+from scraping_tools import pull_BBC
 
 from tools import save_dictionary
 
@@ -15,6 +16,7 @@ tools = [
     pull_fivethirtyeight, 
     pull_foxnews, 
     pull_apnews,
+    pull_BBC
 ]
 
 doc_dic = {}

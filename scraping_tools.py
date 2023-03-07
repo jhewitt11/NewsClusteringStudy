@@ -53,7 +53,6 @@ def pull_fivethirtyeight():
         
     return titles, by_lines, contents, links
 
-
 def pull_foxnews():
     page_url = 'https://www.foxnews.com/politics'
 
@@ -117,7 +116,7 @@ def pull_apnews():
     soup = BeautifulSoup(r.data.decode('utf-8'), 'lxml')
     containers = soup.findAll("a", {'data-key': 'story-link'})
 
-    # Extract links to individual articles
+    # Extract links to individual articless
     links = []
     
     for container in containers:
@@ -159,23 +158,114 @@ def pull_apnews():
     
 #titles, by_lines, content, links = pull_apnews()
 
+def pull_BBC():
+    page_url = 'https://bbc.com/news'
+    main_url = 'https://bbc.com'
 
-'''
-page_url = 'https://apnews.com/article/brittney-griner-paul-whelan-biden-meeting-8a9049fcedf67bdda9d0bac1b83d53c3'
-
-# Open connection and pull html contents from homepage
+    # Open connection and pull html contents from homepage
     
+    PM = urllib3.PoolManager()
+    r = PM.request('GET', page_url)
+            
+    print('BBC connection made..')
 
-r = requests.get(page_url).content
+    soup = BeautifulSoup(r.data.decode('utf-8'), 'lxml')
+    containers = soup.findAll('a', {'class' : 'gs-c-promo-heading nw-o-link gs-o-bullet__text gs-o-faux-block-link__overlay-link gel-pica-bold gs-u-pl-@xs'})
+
+    links = []
+
+    for container in containers:
+        if container.get('href'):         
+            link = container['href']
+            links.append(main_url + link)
+
+    titles = []
+    by_lines = []
+    contents = []
+
+    for link in links :
+        PM2 = urllib3.PoolManager()
+        r2 = PM2.request('GET', link)
+        soup2 = BeautifulSoup(r2.data.decode('utf-8'), 'lxml')
+
+        title = soup2.find('h1').text
+
+        # check for null value
+        by_line_tag = soup2.find('div', {'class' : re.compile('TextContributorName')})
+        if by_line_tag == None:
+            by_line = 'None'
+        else:
+            by_line = by_line_tag.text
+
+
+        body = soup2.findAll('div', {'data-component' : 'text-block'})
+
+        text = ''
+        for tag in body :
+            text += ' ' + tag.get_text(strip = True)
+
+        titles.append(title)
+        by_lines.append(by_line)
+        contents.append(text)
+
+    return titles, by_lines, contents, links
+
+
+
+
+def pull_globaltimes():
+    page_url = 'https://www.globaltimes.cn/world/index.html'
+    main_url = 'https://www.globaltimes.cn'
+
+    # Open connection and pull html contents from homepage
+    
+    PM = urllib3.PoolManager()
+    r = PM.request('GET', page_url)
+            
+    print('GlobalTimes connection made..')
+
+    soup = BeautifulSoup(r.data.decode('utf-8'), 'lxml')
+    containers = soup.findAll('a', {'target' : '_blank'})
+
+    links = []
+
+    for container in containers:
+        if container.get('href'):         
+            link = container['href']
+            links.append(link)
+            print(link)
+
+    titles = []
+    by_lines = []
+    contents = []
+
+    for link in links :
+        PM2 = urllib3.PoolManager()
+        r2 = PM2.request('GET', link)
+        soup2 = BeautifulSoup(r2.data.decode('utf-8'), 'lxml')
+
+        title = soup2.find('div', {'class' : 'article_title'}).text
+
+        # check for null value
         
-print('connection made..')        
+
+        by_line_tag = soup2.find('span', {'class' : 'byline'})
+        if by_line_tag == None:
+            by_line = 'None'
+        else:
+            by_line = by_line_tag.text
         
-soup = BeautifulSoup(r, 'html.parser')
 
+        body = soup2.find('div', {'class' : 'article_right'})
 
-Main = soup.find('main', {'class' : 'Main'})
+        print(body.text)
 
-Body = Main.find('div', 'Body')
+        text = ''
+        for tag in body :
+            text += ' ' + tag.get_text(strip = True)
 
-Containers = Body.findAll('div', {'class' : re.compile(r'^Component-signature')})
-'''
+        titles.append(title)
+        by_lines.append(by_line)
+        contents.append(text)
+
+    return titles, by_lines, contents, links
