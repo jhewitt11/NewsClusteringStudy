@@ -80,7 +80,26 @@ def read_dictionary(FILE):
 '''
 OTHER TOOLS
 '''
-def generate_report(model_name, TEXT_A, TEXT_B, sent_a, sent_b, vals_a, vals_b, indices_a, indices_b, K_RESULTS, THRESHOLD):   
+def generate_knn_report(headlines, distances, indices, title):
+
+    output = ''
+
+    for i in range(len(headlines)):
+        header = f'#{i} {headlines[i]}:\n'
+
+        body = ''
+        for k in range(1, len(distances[i])):
+            body += f'\t\t #{indices[i][k]}, dist : {distances[i][k]:.2f}, {headlines[indices[i][k]]}\n'
+        body += '\n'
+        output += header + body
+
+    with open('results/'+'KNN for '+title+'.txt', 'w') as file:
+        file.write(output)
+
+    return
+
+
+def generate_AB_report(model_name, TEXT_A, TEXT_B, sent_a, sent_b, vals_a, vals_b, indices_a, indices_b, K_RESULTS, THRESHOLD):   
     
     header = 'model used : ' + model_name + '\n'
     output = header + 'TEXT_A is ' + TEXT_A + '\nTEXT_B is ' + TEXT_B + '\n\n'

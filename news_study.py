@@ -1,6 +1,7 @@
 import json
 import numpy as np
 import joblib
+import umap as up
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import PCA
@@ -11,14 +12,19 @@ import matplotlib.patches as mpatches
 from mpl_toolkits import mplot3d
 
 from tools      import read_dictionary
+from tools      import generate_knn_report
 
 DICT_NAME               = '2023-02-22_news.json'
 VECTOR_SCHEME           = 'BERT'
-DIM_REDUCTION_SCHEME    = 'PCA'
+DIM_REDUCTION_SCHEME    = 'UMAP'
 DIMENSIONALITY          = 2
 
-DATE = DICT_NAME.split('_')[0]
-ID = str(np.random.randint(low = 0, high = 1000))
+DATE                    = DICT_NAME.split('_')[0]
+ID                      = str(np.random.randint(low = 0, high = 1000))
+
+TITLE                   = DATE+' '+ID+' '+DIM_REDUCTION_SCHEME+' reduced '+VECTOR_SCHEME+' embeddings'
+
+
 
 doc_dic = read_dictionary('data/' + DICT_NAME)
 assert(doc_dic != False)
@@ -53,21 +59,25 @@ if DIM_REDUCTION_SCHEME == 'PCA':
     X_prime = pca.fit_transform(X)
 
 elif DIM_REDUCTION_SCHEME == 'UMAP':
-    pass
+    
+    reducer = up.UMAP(n_components = DIMENSIONALITY,
+                        metric = 'cosine')
+
+    X_prime = reducer.fit_transform(X)
+
 else :
     print('error: DIM_REDUCTION_SCHEME not recognized.')
 
-'''
+
 neighbs = NearestNeighbors(n_neighbors = 4)
 neighbs.fit(X_prime)
-distances, indices = neighbs.radius_neighbors(X_prime, radius = 0.1, return_distance = True, sort_results = True)
+distances, indices = neighbs.kneighbors(X_prime, return_distance = True)
 
 np.set_printoptions(formatter={'float': lambda x: "{0:0.2f}".format(x)})
 
 
-#for k, index in enumerate(indices):
-#    print(f'#{k}\t{indices[k]}\n   \t{distances[k]}\n')      
-'''
+generate_knn_report(headlines, distances, indices, TITLE)
+
 
 
 
@@ -111,8 +121,4 @@ for i in range(len(x)):
     
 ax.set_title(DIM_REDUCTION_SCHEME+' reduced '+VECTOR_SCHEME+' embeddings')
 plt.legend(handles=[red_patch, green_patch, blue_patch])
-
-
-
-
-fig.savefig('results/'+DATE+' '+ID+' '+DIM_REDUCTION_SCHEME+' reduced '+VECTOR_SCHEME+' embeddings'+'.png')
+fig.savefig('results/'+TITLE+'.png')

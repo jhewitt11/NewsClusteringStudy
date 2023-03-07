@@ -4,3 +4,4 @@ clusters*
 *.ipynb
 *.z
 __pycache__/
+results/

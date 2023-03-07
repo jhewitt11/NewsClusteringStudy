@@ -5,7 +5,7 @@ from sentence_transformers import SentenceTransformer
 
 from tools import read_dictionary
 
-DICT_NAME   = '2023-02-27_news.json'
+DICT_NAME   = '2023-03-06_news.json'
 DIRECTORY 	= 'data/embeddings/'
 
 date = DICT_NAME.split('_')[0]
